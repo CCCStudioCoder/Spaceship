@@ -1,17 +1,13 @@
 'use client'
 
 import {useAPI} from "@/app/util/client";
-import {Project, User} from "@/app/util/db";
+import {Project} from "@/app/util/db";
 import {roleIn, targetURL} from "@/app/util/projects";
 import {Suspense} from "react";
 import {Loading} from "@/app/util/components";
 
 export default function Dashboard() {
-    const [UserProvider, user, refreshUserData] = useAPI<User>(
-        "auth/user_data",
-        {method: "POST"},
-        "/dashboard",
-    );
+    const [UserProvider, user, refreshUserData] = useAPI();
 
     return (
         <main>
