@@ -1,17 +1,15 @@
-import {NextRequest, NextResponse} from "next/server";
 import {dbError, SUCCESSFUL} from "@/app/util/db";
 import HttpStatusCode from "@/app/util/status-code";
 import {db} from "@/app/db";
 import {validateSession} from "@/app/util/session";
 import {inviteTokenTable, projectTable, userTable} from "@/app/db/schema";
 import {and, eq, sql} from "drizzle-orm";
-import {NO_PERMISSIONS, PROJECT_NOT_FOUND} from "@/app/api/projects/route";
-import {hasRights} from "@/app/util/projects";
+import {hasPermissions, NO_PERMISSIONS, PROJECT_NOT_FOUND} from "@/app/util/projects";
 
-const INVALID_TOKEN = NextResponse.json({error: "Invalid token"}, {status: HttpStatusCode.BAD_REQUEST});
-const TOKEN_NOT_FOUND = NextResponse.json({error: "Token not found"}, {status: HttpStatusCode.NOT_FOUND});
+const INVALID_TOKEN = Response.json({error: "Invalid token"}, {status: HttpStatusCode.BAD_REQUEST});
+const TOKEN_NOT_FOUND = Response.json({error: "Token not found"}, {status: HttpStatusCode.NOT_FOUND});
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
     try {
         const { token } = await req.json();
         if(typeof token !== "string") {
@@ -49,13 +47,13 @@ export async function POST(req: NextRequest) {
             projects: sql`array_append(${userTable}, ${tokenSearch[0].linksTo})`
         }).where(eq(userTable.id, userData!.id));
 
-        return NextResponse.json({project: project[0].name});
+        return Response.json({project: project[0].name});
     } catch(e) {
         return dbError(e);
     }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PUT(req: Request) {
     try {
         const { name, linksTo, admin, expireDate, leftUses } = await req.json();
 
@@ -69,7 +67,7 @@ export async function PUT(req: NextRequest) {
             .where(eq(inviteTokenTable.linksTo, linksTo))
             .limit(5);
         if(alreadyPointing.length > 4) {
-            return NextResponse.json({error: "There already exist 5 invite tokens for this project."}, {status: HttpStatusCode.FORBIDDEN})
+            return Response.json({error: "There already exist 5 invite tokens for this project."}, {status: HttpStatusCode.FORBIDDEN})
         }
 
         const projectSearch = await db.select()
@@ -79,7 +77,7 @@ export async function PUT(req: NextRequest) {
         if(projectSearch.length == 0) {
             return PROJECT_NOT_FOUND;
         }
-        if(!hasRights(userData!.id, projectSearch[0])) {
+        if(!hasPermissions(userData!.id, projectSearch[0])) {
             return NO_PERMISSIONS;
         }
 
@@ -92,7 +90,7 @@ export async function PUT(req: NextRequest) {
     }
 }
 
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: Request) {
     try {
         const body = await req.json();
 
@@ -110,7 +108,7 @@ export async function PATCH(req: NextRequest) {
             return error;
         }
 
-        if(!hasRights(userData!.id, projectSearch[0])) {
+        if(!hasPermissions(userData!.id, projectSearch[0])) {
             return NO_PERMISSIONS;
         }
 
@@ -135,7 +133,7 @@ export async function PATCH(req: NextRequest) {
     }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request) {
     try {
         const { id, project } = await req.json();
 
@@ -156,7 +154,7 @@ export async function DELETE(req: NextRequest) {
             return PROJECT_NOT_FOUND;
         }
 
-        if(!hasRights(userData!.id, projectSearch[0])) {
+        if(!hasPermissions(userData!.id, projectSearch[0])) {
             return NO_PERMISSIONS;
         }
 

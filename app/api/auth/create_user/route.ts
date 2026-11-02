@@ -1,4 +1,3 @@
-import {NextResponse} from "next/server";
 import {db} from "@/app/db";
 import {userTable} from "@/app/db/schema";
 import {dbError} from "@/app/util/db";
@@ -13,13 +12,13 @@ export async function POST(req: Request) {
         const { userName, password } = await req.json();
 
         if(typeof userName !== "string" || typeof password !== "string") {
-            return NextResponse.json({error: "User name and password are required"}, {status: HttpStatusCode.BAD_REQUEST});
+            return Response.json({error: "User name and password are required"}, {status: HttpStatusCode.BAD_REQUEST});
         }
 
         const forwardedFor = req.headers.get("x-forwarded-for");
 
         if(!forwardedFor) {
-            return NextResponse.json({error: "Cannot find user's IP"}, {status: HttpStatusCode.UNAUTHORIZED});
+            return Response.json({error: "Cannot find user's IP"}, {status: HttpStatusCode.UNAUTHORIZED});
         }
 
         const ip = forwardedFor.split(",")[0].trim();
@@ -33,7 +32,7 @@ export async function POST(req: Request) {
             .limit(1);
 
         if(usersWithIPOrPseudo.length > 0) {
-            return NextResponse.json({error: "IP or username already used"}, {status: HttpStatusCode.UNAUTHORIZED})
+            return Response.json({error: "IP or username already used"}, {status: HttpStatusCode.UNAUTHORIZED})
         }
 
         const session = createSession();
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
             maxAge: 60 * 60 * 24 * 30
         });
 
-        return NextResponse.redirect("https://github.com/apps/spaceship-translate/installations/new/", {status: HttpStatusCode.CREATED});
+        return Response.redirect("https://github.com/apps/spaceship-translate/installations/new/", HttpStatusCode.CREATED);
     } catch(e) {
         return dbError(e);
     }

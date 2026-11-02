@@ -1,4 +1,8 @@
 import {Project} from "@/app/util/db";
+import {db} from "@/app/db";
+import {projectTable} from "@/app/db/schema";
+import {eq} from "drizzle-orm";
+import HttpStatusCode from "@/app/util/status-code";
 
 export function targetURL(project: Project) {
     return `https://github.com/${project.targetOwner}/${project.targetRepo}`;
@@ -8,7 +12,13 @@ export enum Role {
     OWNER = "Owner",
     ADMIN = "Administrator",
     CONTRIBUTOR = "Contributor",
-    NONE = "None",
+    NONE = "None"
+}
+
+const ROLES = [Role.OWNER, Role.ADMIN, Role.CONTRIBUTOR, Role.NONE];
+
+export function roleColumn(role: Role) {
+    return role === Role.ADMIN ? "admins" : (role === Role.CONTRIBUTOR ? "contributors" : "owner"); // Nice "vibecoded" func
 }
 
 export function roleIn(userId: number, project: Project): Role {
@@ -18,7 +28,25 @@ export function roleIn(userId: number, project: Project): Role {
     return Role.NONE;
 }
 
-export function hasRights(userId: number, project: Project): boolean {
+export function hasPermissions(userId: number, project: Project): boolean {
     const role = roleIn(userId, project);
     return [Role.OWNER, Role.ADMIN].includes(role);
 }
+
+export async function getProject(id: number, user: number, permissionsNeeded: Role = Role.ADMIN): Promise<Response|Project> {
+    const projectSearch = await db.select()
+        .from(projectTable)
+        .where(eq(projectTable.id, id))
+        .limit(1);
+    if(projectSearch.length === 0) {
+        return PROJECT_NOT_FOUND;
+    }
+    if(ROLES.indexOf(roleIn(user, projectSearch[0])) >= ROLES.indexOf(permissionsNeeded)) {
+        return NO_PERMISSIONS;
+    }
+
+    return projectSearch[0];
+}
+
+export const PROJECT_NOT_FOUND = Response.json({error: "No project found."}, {status: HttpStatusCode.NOT_FOUND});
+export const NO_PERMISSIONS = Response.json({error: "You do not have permission to manage this project"}, {status: HttpStatusCode.FORBIDDEN})

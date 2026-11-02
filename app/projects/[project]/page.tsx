@@ -2,7 +2,9 @@
 
 import {use} from "react";
 
-export default function Project(slug: Promise<{project: string}>) {
+export type ProjectSlug = {project: string};
+
+export default function ProjectPage(slug: Promise<ProjectSlug>) {
     const { project } = use(slug);
 
     return (

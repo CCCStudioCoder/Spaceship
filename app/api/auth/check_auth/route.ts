@@ -1,7 +1,6 @@
 import {db} from "@/app/db";
 import {userTable} from "@/app/db/schema";
 import {eq} from "drizzle-orm";
-import {NextResponse} from "next/server";
 import {dbError} from "@/app/util/db";
 import {cookies} from "next/headers";
 import {hash, verify} from "argon2";
@@ -13,7 +12,7 @@ export async function POST(req: Request) {
         const { user, password } = await req.json();
 
         if(typeof user != "string" || typeof password != "string") {
-            return NextResponse.json({error: "Bad request"}, {status: HttpStatusCode.BAD_REQUEST});
+            return Response.json({error: "Bad request"}, {status: HttpStatusCode.BAD_REQUEST});
         }
 
         const userSearch = await db.select()
@@ -22,11 +21,11 @@ export async function POST(req: Request) {
             .limit(1);
 
         if(userSearch.length == 0) {
-            return NextResponse.json({error: "Cannot find such user"}, {status: HttpStatusCode.NOT_FOUND});
+            return Response.json({error: "Cannot find such user"}, {status: HttpStatusCode.NOT_FOUND});
         }
 
         if(!await verify(userSearch[0].password, password)) {
-            return NextResponse.json({error: "Invalid password"}, {status: HttpStatusCode.UNAUTHORIZED});
+            return Response.json({error: "Invalid password"}, {status: HttpStatusCode.UNAUTHORIZED});
         }
 
         const sessionValid = !checkExpire(userSearch[0].sessionKeyCreation);
@@ -43,7 +42,7 @@ export async function POST(req: Request) {
             maxAge: 60 * 60 * 24 * 30
         });
 
-        return NextResponse.json({...userSearch[0]}, {status: HttpStatusCode.OK});
+        return Response.json({...userSearch[0]}, {status: HttpStatusCode.OK});
     } catch (e) {
         return dbError(e);
     }

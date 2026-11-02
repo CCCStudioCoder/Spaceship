@@ -22,6 +22,11 @@ export const projectTable = snakeCase.table("projects", {
     admins: integer().array().notNull().default([]),
     contributors: integer().array().notNull().default([]),
     isPublic: boolean().notNull(),
+    defaultLanguage: varchar().notNull().default("en"),
+    translationBranch: varchar(),
+    translationNames: varchar().array().notNull().default([]),
+    translationSources: varchar().array().notNull().default([]),
+    translationTargets: varchar().array().notNull().default([]),
 });
 
 export const inviteTokenTable = snakeCase.table("inviteTokens", {

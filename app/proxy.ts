@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 
 export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const session = request.cookies.get("session")?.value;
 
     if (pathname !== "/" && !session) {
-        return NextResponse.redirect(
+        return Response.redirect(
             new URL(`/auth/login?url=${request.url}`, request.url)
         );
     }

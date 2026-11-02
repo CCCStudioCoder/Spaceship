@@ -1,13 +1,13 @@
-import {NextRequest, NextResponse} from "next/server";
 import {validateSession} from "@/app/util/session";
 import HttpStatusCode from "@/app/util/status-code";
 import github from "@/app/util/github";
 import {db} from "@/app/db";
 import {userTable} from "@/app/db/schema";
 import {eq} from "drizzle-orm";
+import {NextRequest} from "next/server";
 
 const RES = (status: number) =>
-    NextResponse.redirect("/dashboard", {status: status});
+    Response.redirect("/dashboard", status);
 
 export async function GET(req: NextRequest) {
     try {

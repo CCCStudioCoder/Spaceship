@@ -1,4 +1,3 @@
-import {NextResponse} from "next/server";
 import {validateSession} from "@/app/util/session";
 import {dbError} from "@/app/util/db";
 import {db} from "@/app/db";
@@ -8,7 +7,7 @@ import {eq, sql} from "drizzle-orm";
 import {hash, verify} from "argon2";
 import {cookies} from "next/headers";
 
-export async function POST() {
+export async function GET() {
     return (await validateSession())[0];
 }
 
@@ -22,7 +21,7 @@ export async function PATCH(req: Request) {
         }
 
         if(Boolean(oldPassword) !== Boolean(newPassword)) { // Check if (not) both of neither exist
-            return NextResponse.json({error: "To change your password, please provide old and new password"}, {status: HttpStatusCode.BAD_REQUEST});
+            return Response.json({error: "To change your password, please provide old and new password"}, {status: HttpStatusCode.BAD_REQUEST});
         }
 
         const update: any = {};
@@ -30,7 +29,7 @@ export async function PATCH(req: Request) {
         if(oldPassword) {
             const pwHash = userData!.password;
             if(!await verify(pwHash, oldPassword)) {
-                return NextResponse.json({error: "Wrong password"}, {status: HttpStatusCode.UNAUTHORIZED});
+                return Response.json({error: "Wrong password"}, {status: HttpStatusCode.UNAUTHORIZED});
             }
             update.password = await hash(newPassword);
         }
@@ -42,7 +41,7 @@ export async function PATCH(req: Request) {
             .set(update)
             .where(eq(userTable.id, userData!.id));
 
-        return NextResponse.json({...update}, {status: HttpStatusCode.OK});
+        return Response.json({...update}, {status: HttpStatusCode.OK});
     } catch(e) {
         return dbError(e);
     }
@@ -53,7 +52,7 @@ export async function PUT(req: Request) {
         const { project } = await req.json();
 
         if(typeof project !== "number") {
-            return NextResponse.json({error: "Invalid project id"}, {status: HttpStatusCode.BAD_REQUEST});
+            return Response.json({error: "Invalid project id"}, {status: HttpStatusCode.BAD_REQUEST});
         }
 
         const [error, validAuth] = await validateSession();
@@ -85,13 +84,13 @@ export async function DELETE(req: Request) {
                 const store = await cookies();
                 store.delete("session");
 
-                return NextResponse.json({}, {status: HttpStatusCode.OK})
+                return Response.json({}, {status: HttpStatusCode.OK})
             }
-            return NextResponse.json({error: "Wrong password"}, {status: HttpStatusCode.UNAUTHORIZED});
+            return Response.json({error: "Wrong password"}, {status: HttpStatusCode.UNAUTHORIZED});
         }
 
         if(typeof project !== "number") {
-            return NextResponse.json({error: "Invalid project id"}, {status: HttpStatusCode.BAD_REQUEST});
+            return Response.json({error: "Invalid project id"}, {status: HttpStatusCode.BAD_REQUEST});
         }
 
         await db.update(userTable).set({

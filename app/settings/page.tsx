@@ -2,7 +2,7 @@
 
 import {useRef, useState} from "react";
 import {useRouter} from "next/navigation";
-import {useUser} from "@/app/util/client";
+import {useAPI} from "@/app/util/client";
 
 export default function Settings() {
     const userRef = useRef<HTMLInputElement>(null);
@@ -15,14 +15,16 @@ export default function Settings() {
     const [statusInfo, setStatusInfo] = useState("");
     const [deletePopup, setDeletePopup] = useState(false);
 
-    const username = useUser("/settings")[0].pseudo;
+    const [UserProvider, user] = useAPI("/settings");
 
     return (
         <div>
             <h1>Account settings</h1>
             <section>
                 <h2>User name</h2>
-                <input type="text" ref={userRef} value={username} />
+                <UserProvider width={500} height={500}>
+                    <input type="text" ref={userRef} value={user!.pseudo} />
+                </UserProvider>
             </section>
             <fieldset>
                 <h2>Password</h2>

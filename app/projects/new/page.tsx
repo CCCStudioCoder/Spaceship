@@ -6,6 +6,7 @@ import {useRouter} from "next/navigation";
 
 export default function NewProject() {
     const nameRef = useRef<HTMLInputElement>(null);
+    const languageRef = useRef<HTMLInputElement>(null);
     const privateRef = useRef<HTMLInputElement>(null);
 
     const [selectedRepo, setSelectedRepo] = useState("");
@@ -22,8 +23,10 @@ export default function NewProject() {
             <Suspense fallback={<Loading height={500} width={500} />}>
                 <RepositoryDropdown selectedRepo={selectedRepo} setSelectedRepo={setSelectedRepo} />
             </Suspense>
-            <label htmlFor="name">Make project private</label>
-            <input name="name" type="checkbox" ref={privateRef} />
+            <label htmlFor="language">Project's default language (code)</label>
+            <input name="language" type="text" value="en" ref={languageRef} />
+            <label htmlFor="isPrivate">Make project private</label>
+            <input name="isPrivate" type="checkbox" ref={privateRef} />
             <p>{statusInfo}</p>
             <button onClick={submit}>Create project</button>
         </div>
@@ -32,6 +35,7 @@ export default function NewProject() {
     async function submit() {
         const parts = selectedRepo.split("/")
         const name = nameRef.current!.value || parts[1];
+        const defaultLanguage = languageRef.current!.value;
         const isPrivate = privateRef.current!.checked;
 
         const { error } = await fetch("/api/projects", {
@@ -41,6 +45,7 @@ export default function NewProject() {
                 targetOwner: parts[0],
                 targetRepo: parts[1],
                 isPublic: !isPrivate,
+                defaultLanguage,
             }),
         }).then(res => res.json());
 
