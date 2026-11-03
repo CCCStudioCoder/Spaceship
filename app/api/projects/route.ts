@@ -86,6 +86,7 @@ export async function PUT(req: Request) {
             isPublic: isPublic,
             owner: userData!.id,
             defaultLanguage: defaultLanguage,
+            projectCreation: Date.now(),
         }).returning({id: userTable.id}))[0];
 
         await db.update(userTable).set({

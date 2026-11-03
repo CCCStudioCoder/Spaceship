@@ -9,10 +9,14 @@ import HttpStatusCode from "@/app/util/status-code";
 
 export async function POST(req: Request) {
     try {
-        const { userName, password } = await req.json();
+        const { username, password } = await req.json();
 
-        if(typeof userName !== "string" || typeof password !== "string") {
+        if(typeof username !== "string" || typeof password !== "string") {
             return Response.json({error: "User name and password are required"}, {status: HttpStatusCode.BAD_REQUEST});
+        }
+        if(username.length > 25 || username.length < 6 || password.length > 25 || password.length < 6) {
+            return Response.json({error: "Please provide username and password with between 6 and 25 characters."},
+                {status: HttpStatusCode.BAD_REQUEST});
         }
 
         const forwardedFor = req.headers.get("x-forwarded-for");
@@ -27,7 +31,7 @@ export async function POST(req: Request) {
             .from(userTable)
             .where(or(
                 eq(userTable.ip, ip),
-                eq(userTable.pseudo, userName)
+                eq(userTable.pseudo, username)
             ))
             .limit(1);
 
@@ -38,11 +42,12 @@ export async function POST(req: Request) {
         const session = createSession();
 
         await db.insert(userTable).values({
-            pseudo: userName,
+            pseudo: username,
             password: await hash(password),
             ip: ip,
             sessionKey: session,
-            sessionKeyCreation: Date.now()
+            sessionKeyCreation: Date.now(),
+            accountCreation: Date.now()
         });
 
         const store = await cookies();

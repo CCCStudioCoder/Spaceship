@@ -1,12 +1,14 @@
 'use client'
 
-import {ReactNode, useCallback, useEffect, useMemo, useReducer, useState} from "react";
+import {ReactNode, useEffect, useMemo, useReducer, useState} from "react";
 import {DimensionProps, Loading} from "@/app/util/components";
 import {useRouter} from "next/navigation";
 import {User} from "@/app/util/db";
 
-type Props = {children: ReactNode};
-export type APIProvider = (params: Props & DimensionProps) => ReactNode;
+const DEFAULT_REQUEST_INIT: RequestInit = {method: "GET"};
+
+type Props<T> = {children: (value: T) => ReactNode};
+export type APIProvider<T> = (params: Props<T> & DimensionProps) => ReactNode;
 
 /**
  * WARNING <br/>
@@ -18,9 +20,9 @@ export type APIProvider = (params: Props & DimensionProps) => ReactNode;
 export function useAPI<T = User>(
     redirect: string = "/",
     api: string = "user_data",
-    init: RequestInit = {method: "GET"},
+    init: RequestInit = DEFAULT_REQUEST_INIT,
     process: (res: any) => T = res => res
-): [APIProvider, T|null, () => void] {
+): [APIProvider<T>, T|null, () => void] {
     const [event, refresh] = useReducer(x => x+1, 0);
     const [content, setContent] = useState<any>(null);
     const router = useRouter();
@@ -30,10 +32,10 @@ export function useAPI<T = User>(
         fetch("/api/" + api, { ...init, signal: abortController.signal })
             .then(response => response.json())
             .then(json => setContent(json));
-        return () => abortController.abort();
+        return () => abortController.abort("Unknown reason");
     }, [event, api, init]);
 
-    const Error = useCallback(() => {
+    const Error = () => {
         useEffect(() => {
             if(content.redirect) {
                 router.replace("/auth/login?url=" + redirect);
@@ -41,13 +43,13 @@ export function useAPI<T = User>(
             }
         }, []);
         return <p className="text-red-600">{content.error}</p>
-    }, [redirect]);
+    };
 
-    function Provider({ children, width, height }: Props & DimensionProps): ReactNode {
+    function Provider<T>({ children, width, height }: Props<T> & DimensionProps): ReactNode {
         return content
             ? ( content.error
                 ? <Error />
-                : children)
+                : children(content))
             : <Loading width={width} height={height} />;
     }
 

@@ -1,4 +1,4 @@
-import {boolean, integer, serial, snakeCase, varchar} from "drizzle-orm/pg-core";
+import {bigint, boolean, integer, serial, snakeCase, varchar} from "drizzle-orm/pg-core";
 
 export const userTable = snakeCase.table("users", {
     id: serial().primaryKey(),
@@ -8,8 +8,9 @@ export const userTable = snakeCase.table("users", {
     githubAppId: integer(),
     githubAccount: varchar(),
     sessionKey: varchar().notNull().unique(),
-    sessionKeyCreation: integer().notNull(),
+    sessionKeyCreation: bigint({ mode: 'number' }).notNull(),
     projects: integer().array().notNull().default([]),
+    accountCreation: bigint({ mode: 'number' }).notNull()
 });
 
 export const projectTable = snakeCase.table("projects", {
@@ -27,6 +28,7 @@ export const projectTable = snakeCase.table("projects", {
     translationNames: varchar().array().notNull().default([]),
     translationSources: varchar().array().notNull().default([]),
     translationTargets: varchar().array().notNull().default([]),
+    projectCreation: bigint({ mode: 'number' }).notNull()
 });
 
 export const inviteTokenTable = snakeCase.table("inviteTokens", {
@@ -34,6 +36,6 @@ export const inviteTokenTable = snakeCase.table("inviteTokens", {
     name: varchar().notNull().unique(),
     linksTo: integer().notNull(),
     admin: boolean().notNull(),
-    expireDate: integer().notNull(),
+    expireDate: bigint({ mode: 'number' }).notNull(),
     leftUses: integer().notNull()
 });

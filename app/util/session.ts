@@ -15,23 +15,29 @@ export function checkExpire(creation: number) {
 
 export async function validateSession(): Promise<[Response, boolean, User?]> {
     try {
-        const session = (await cookies()).get("session");
+        const session = await cookies().then(store => store.get("session"));
 
-        if(typeof session !== "string") {
+        if(!session?.value) {
             return [Response.json({error: "Session required"}, {status: 400}), false];
         }
 
-        const userSearch: User[] = (await db.select().from(userTable)) // There should be always 0 or 1 element here
-            .filter(async user => await verify(user.sessionKey, session));
+        const users: User[] = await db.select().from(userTable);
+        let sessionUser: User | undefined;
+        for(const user of users) {
+            if(await verify(session.value, user.sessionKey)) {
+                sessionUser = user;
+                break;
+            }
+        }
 
-        if(userSearch.length == 0) {
+        if(!sessionUser) {
             return [Response.json({error: "Invalid session"}, {status: 401}), false];
         }
-        if(checkExpire(userSearch[0].sessionKeyCreation)) {
+        if(checkExpire(sessionUser.sessionKeyCreation)) {
             return [Response.json({error: "Old session"}, {status: 401}), false];
         }
 
-        return [Response.json({...userSearch[0]}, {status: 200}), true, userSearch[0]];
+        return [Response.json({...sessionUser}, {status: 200}), true, sessionUser];
     }
 
     catch(e) {

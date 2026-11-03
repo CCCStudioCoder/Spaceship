@@ -12,18 +12,22 @@ export default function Dashboard() {
     return (
         <main>
             <UserProvider width={500} height={500}>
-                <h1>{user!.pseudo}'s projects</h1>
-                <button onClick={refreshUserData}>Refresh</button>
-                <div>
-                    {user!.projects ? user!.projects.map((project, index) => (
-                            <Suspense key={index} fallback={<Loading height={200} width={1000}/>}>
-                                <ProjectDiv id={project}/>
-                            </Suspense>
-                        )) :
-                        <p>You don't have any projects for now</p>}
-                    <button>Create a project</button>
-                    <button>Join an already existent project</button>
-                </div>
+                {user =>
+                    <>
+                    <h1>{user!.pseudo}'s projects</h1>
+                    <button onClick={refreshUserData}>Refresh</button>
+                    <div>
+                        {user!.projects ? user!.projects.map((project, index) => (
+                                <Suspense key={index} fallback={<Loading height={200} width={1000}/>}>
+                                    <ProjectDiv id={project}/>
+                                </Suspense>
+                            )) :
+                            <p>You don't have any projects for now</p>}
+                        <button>Create a project</button>
+                        <button>Join an already existent project</button>
+                    </div>
+                    </>
+                }
             </UserProvider>
         </main>
     );

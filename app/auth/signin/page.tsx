@@ -1,19 +1,23 @@
 'use client'
 
-import {use, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {AwaitingRedirect} from "@/app/auth/login/page";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
 
-export default function Signing({ searchParams}: AwaitingRedirect) {
+export default function Signing({ searchParams }: AwaitingRedirect) {
     const userRef = useRef<HTMLInputElement>(null);
     const pwRef = useRef<HTMLInputElement>(null);
     const cfPwRef = useRef<HTMLInputElement>(null);
+    const [{url, error}, setParams] = useState<Awaited<AwaitingRedirect["searchParams"]>>({url: undefined, error: undefined});
 
-    const { url, error } = use(searchParams);
-    const redirect = url || "/";
+    useEffect(() => {
+        searchParams.then(res => setParams(res));
+    }, [searchParams]);
 
-    const [statusInfo, setStatusInfo] = useState(error || "");
+    const redirect = url ?? "/";
+
+    const [statusInfo, setStatusInfo] = useState(error ?? "");
 
     const router = useRouter();
 
@@ -26,11 +30,11 @@ export default function Signing({ searchParams}: AwaitingRedirect) {
             </section>
             <section>
                 <label>Password</label>
-                <input type="text" ref={pwRef} />
+                <input type="password" ref={pwRef} />
             </section>
             <section>
                 <label>Confirm password</label>
-                <input type="text" ref={cfPwRef} />
+                <input type="password" ref={cfPwRef} />
             </section>
             <p style={{color: "red"}} >{statusInfo}</p>
             <button onClick={handle}>Submit</button>
@@ -47,10 +51,6 @@ export default function Signing({ searchParams}: AwaitingRedirect) {
         const pw = pwRef.current!.value;
         const cfPw = cfPwRef.current!.value;
 
-        if(user.length < 6 || pw.length < 6 || pw.length > 20 || user.length > 20) {
-            setStatusInfo("Please enter username and password with between 6 and 20 characters.");
-        }
-
         if(pw !== cfPw) {
             return;
         }
@@ -58,7 +58,7 @@ export default function Signing({ searchParams}: AwaitingRedirect) {
         const request = await (await fetch("/api/auth/create_user", {
             method: "POST",
             body: JSON.stringify({
-                user: user,
+                username: user,
                 password: pw,
             })
         })).json();

@@ -15,7 +15,7 @@ export default function Settings() {
     const [statusInfo, setStatusInfo] = useState("");
     const [deletePopup, setDeletePopup] = useState(false);
 
-    const [UserProvider, user] = useAPI("/settings");
+    const [UserProvider, _] = useAPI("/settings");
 
     return (
         <div>
@@ -23,7 +23,7 @@ export default function Settings() {
             <section>
                 <h2>User name</h2>
                 <UserProvider width={500} height={500}>
-                    <input type="text" ref={userRef} value={user!.pseudo} />
+                    {user => <input type="text" ref={userRef} value={user!.pseudo}/>}
                 </UserProvider>
             </section>
             <fieldset>
