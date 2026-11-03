@@ -1,6 +1,6 @@
 'use client'
 
-import {use, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
 
@@ -19,7 +19,12 @@ export default function Login({searchParams}: AwaitingRedirect) {
 
     const router = useRouter();
 
-    const redirect = use(searchParams).url || "/";
+    const [{url}, setParams] = useState<Awaited<AwaitingRedirect["searchParams"]>>({url: undefined});
+    const redirect = url ?? "/";
+
+    useEffect(() => {
+        searchParams.then(res => setParams(res));
+    }, [searchParams]);
 
     return (
         <main>
