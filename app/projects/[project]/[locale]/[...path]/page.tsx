@@ -6,8 +6,10 @@ import {use} from "react";
 
 type PathSlug = {path: string[]};
 
+export const instant = false;
+
 export default function Editor(slug: SearchParams<LocaleSlug & PathSlug>) {
-    const { project, locale, path } = use(slug.searchParams);
+    const { project, locale, path } = use(slug.params);
 
     return (
         <div>

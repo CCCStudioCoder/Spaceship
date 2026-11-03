@@ -5,8 +5,10 @@ import {use} from "react";
 
 export type LocaleSlug = {locale: string};
 
+export const instant = false;
+
 export default function LocalePage(slug: SearchParams<LocaleSlug>) {
-    const { project, locale } = use(slug.searchParams);
+    const { project, locale } = use(slug.params);
 
     return (
         <div>
