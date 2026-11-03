@@ -6,7 +6,6 @@ import {use} from "react";
 export type LocaleSlug = {locale: string};
 
 export default function LocalePage(slug: SearchParams<LocaleSlug>) {
-    const { project, locale } = use(slug.params);
 
     return (
         <div>

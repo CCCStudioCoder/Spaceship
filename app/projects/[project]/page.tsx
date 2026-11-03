@@ -8,7 +8,6 @@ export type SearchParams<T = {}> = {
 }
 
 export default function ProjectPage(slug: SearchParams) {
-    const { project } = use(slug.params);
 
     return (
         <div>
