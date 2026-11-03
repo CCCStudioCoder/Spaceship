@@ -1,12 +1,12 @@
 'use client'
 
-import {ProjectSlug} from "@/app/projects/[project]/page";
+import {SearchParams} from "@/app/projects/[project]/page";
 import {use} from "react";
 
 export type LocaleSlug = {locale: string};
 
-export default function LocalePage(slug: Promise<ProjectSlug & LocaleSlug>) {
-    const { project, locale } = use(slug);
+export default function LocalePage(slug: SearchParams<LocaleSlug>) {
+    const { project, locale } = use(slug.searchParams);
 
     return (
         <div>
